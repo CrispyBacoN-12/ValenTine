@@ -19,7 +19,7 @@ export async function GET() {
     id: r.id,
     code: r.code,
     display_name: r.full_name ?? r.email ?? r.code ?? "Unknown",
-    photo_url: r.photo_url ?? "/avatar-placeholder.png",
+    photo_url: r.avatar_url ?? "/avatar-placeholder.png",
   }));
 
   return NextResponse.json(items);
