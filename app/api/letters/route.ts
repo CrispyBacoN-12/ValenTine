@@ -4,39 +4,34 @@ import { createClient } from "@/lib/supabase/server";
 export async function POST(req: Request) {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const body = await req.json().catch(() => null);
-  const recipient_code = body?.recipient_code as string | undefined;
-  const messageRaw = body?.message as string | undefined;
+  // ❌ ไม่เช็ค login ตรงนี้
+  const body = await req.json().catch(() => ({}));
+  const recipient_code = String(body?.recipient_code || "").trim().toUpperCase();
+  const message = String(body?.message || "").trim();
 
   if (!recipient_code) {
     return NextResponse.json({ error: "Missing recipient_code" }, { status: 400 });
   }
-  const message = (messageRaw ?? "").trim();
-  if (!message) {
-    return NextResponse.json({ error: "Missing message" }, { status: 400 });
+  if (!message || message.length < 1) {
+    return NextResponse.json({ error: "Message is empty" }, { status: 400 });
   }
-  if (message.length > 1000) {
+  if (message.length > 2000) {
     return NextResponse.json({ error: "Message too long" }, { status: 400 });
   }
 
-  // ดึงชื่อผู้ส่งจาก profiles (optional)
-  const { data: myProfile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .maybeSingle();
+  // ✅ กันส่งมั่ว: ถ้าคุณมี user token (ตามที่คุณบอกในหน้า WriteBoard)
+  // ให้ส่ง header x-user-token มา แล้วเช็คกับ ENV
+  const token = req.headers.get("x-user-token") || "";
+  if (process.env.USER_TOKEN && token !== process.env.USER_TOKEN) {
+    return NextResponse.json({ error: "Invalid user token" }, { status: 401 });
+  }
 
   const { error } = await supabase.from("letters").insert({
-    sender_user_id: user.id,
-    sender_email: user.email,
-    sender_full_name: myProfile?.full_name ?? null,
     recipient_code,
     message,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
   return NextResponse.json({ ok: true });
 }
