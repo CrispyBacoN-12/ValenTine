@@ -1,27 +1,28 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function createClient() {
-  const cookieStore = await cookies();
+export function createClient() {
+  const cookieStore = cookies();
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // หรือ PUBLISHABLE_KEY
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options as CookieOptions)
-            );
-          } catch {
-            // Server Components บางกรณี set cookie ไม่ได้ → ปล่อยได้
-          }
-        },
+  const url =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const anon =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+
+  if (!url) throw new Error("supabaseUrl is required (set NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL)");
+  if (!anon) throw new Error("supabaseAnonKey is required (set NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_ANON_KEY)");
+
+  return createServerClient(url, anon, {
+    cookies: {
+      get(name) {
+        return cookieStore.get(name)?.value;
       },
-    }
-  );
+      set(name, value, options) {
+        cookieStore.set({ name, value, ...options });
+      },
+      remove(name, options) {
+        cookieStore.set({ name, value: "", ...options });
+      },
+    },
+  });
 }
