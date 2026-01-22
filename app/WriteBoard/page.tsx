@@ -7,7 +7,7 @@ type Recipient = {
   id: string;
   code: string;
   display_name: string;
-  photo_url: string;
+  avatar_url: string;
 };
 
 export default function WriteBoard() {
