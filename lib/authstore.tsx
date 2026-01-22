@@ -65,3 +65,58 @@ export const useAuth = () => {
   if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
 };
+// lib/authstore.tsx
+// Simple client-side token storage for Admin/User tokens.
+// NOTE: This runs in the browser only. Do NOT use on server.
+
+const ADMIN_KEY = "si135_admin_token";
+const USER_KEY = "si135_user_token";
+
+function safeGet(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSet(key: string, value: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {}
+}
+
+function safeRemove(key: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(key);
+  } catch {}
+}
+
+// ✅ Admin token
+export function getAdminToken(): string | null {
+  return safeGet(ADMIN_KEY);
+}
+
+export function setAdminToken(token: string) {
+  safeSet(ADMIN_KEY, token);
+}
+
+export function clearAdminToken() {
+  safeRemove(ADMIN_KEY);
+}
+
+// ✅ User token
+export function getUserToken(): string | null {
+  return safeGet(USER_KEY);
+}
+
+export function setUserToken(token: string) {
+  safeSet(USER_KEY, token);
+}
+
+export function clearUserToken() {
+  safeRemove(USER_KEY);
+}
