@@ -106,7 +106,7 @@ export default function WriteBoard() {
                   <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={r.photo_url}
+                      src={r.avatar_url}
                       alt={r.display_name}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
