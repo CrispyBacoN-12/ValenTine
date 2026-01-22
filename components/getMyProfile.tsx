@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabaseClient"; // ของคุณ
+import { createClient } from "@/lib/supabase/client"; // ของคุณ
 
 const supabase = createClient();
 
