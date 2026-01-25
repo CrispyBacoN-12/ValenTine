@@ -11,10 +11,10 @@ type RecipientLite = {
 };
 
 export default function WritePage() {
-  const params = useParams<{ code: string }>(); // ✅ ให้ชื่อ param เป็น code
+  const params = useParams<{ id: string }>(); // ✅ ให้ชื่อ param เป็น code
   const router = useRouter();
 
-  const recipientCode = (params?.code || "").toString().toUpperCase();
+  const recipientCode = (params?.id || "").toString().toUpperCase();
 
   const [recipient, setRecipient] = useState<RecipientLite | null>(null);
   const [message, setMessage] = useState("");
