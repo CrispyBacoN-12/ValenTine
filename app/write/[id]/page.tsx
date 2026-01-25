@@ -36,6 +36,8 @@ export default function WritePage() {
       .then((list: RecipientLite[] | any) => {
         if (cancelled) return;
         if (list?.error) return setErr(list.error);
+console.log("params =", params);
+console.log("recipientCode =", recipientCode);
 
         const found =
           (list as RecipientLite[]).find(
