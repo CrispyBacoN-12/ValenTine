@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
     // 2) insert letter
     const { error: insErr } = await supabase.from("letters").insert({
-      recipient_code: recipient.code,
+      recipient_code,
       message,
     });
 
