@@ -81,6 +81,8 @@ console.log("recipientCode =", recipientCode);
       });
 
       const data = await res.json().catch(() => ({}));
+      console.log("send status:", res.status);
+console.log("send data:", data);
       if (!res.ok) return setErr(data?.error || "Failed to send");
 
       setStatus("Sent ✅");
