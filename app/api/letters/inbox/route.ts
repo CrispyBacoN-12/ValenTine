@@ -3,6 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
   const supabase = await createClient();
+  const OPEN_AT = new Date("2026-02-14T00:00:00+07:00").getTime();
+
+if (Date.now() < OPEN_AT) {
+  return NextResponse.json({ error: "Locked until Feb 14" }, { status: 403 });
+}
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
