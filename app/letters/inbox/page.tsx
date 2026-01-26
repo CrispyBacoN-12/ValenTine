@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { AuthProvider } from "@/components/Authcontext";
 
 type InboxItem = {
@@ -9,12 +11,16 @@ type InboxItem = {
   created_at: string;
 };
 
+const OPEN_AT = new Date("2026-02-14T00:00:00+07:00").getTime(); // เวลาไทย
+
 export default function InboxPage() {
+  const router = useRouter();
+
   const [items, setItems] = useState<InboxItem[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function load() {
+  const load = useCallback(async () => {
     setErr(null);
     setLoading(true);
 
@@ -26,7 +32,12 @@ export default function InboxPage() {
       const data = await res.json().catch(() => ({}));
 
       if (res.status === 401) {
-        window.location.href = "/login";
+        router.replace("/login");
+        return;
+      }
+
+      if (res.status === 403) {
+        router.replace("/locked");
         return;
       }
 
@@ -41,11 +52,25 @@ export default function InboxPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
 
   useEffect(() => {
-    load();
-  }, []);
+    // 🔒 1) ล็อกก่อนวันเปิด
+    if (Date.now() < OPEN_AT) {
+      router.replace("/locked");
+      return;
+    }
+
+    // ✅ 2) เช็ค login ใน client
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data?.session) {
+        router.replace("/login");
+        return;
+      }
+      load();
+    });
+  }, [router, load]);
 
   return (
     <AuthProvider>
@@ -117,7 +142,6 @@ export default function InboxPage() {
                     key={x.id}
                     className="group relative overflow-hidden rounded-2xl border border-rose-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                   >
-                    {/* soft shine */}
                     <div className="pointer-events-none absolute -left-12 -top-12 h-28 w-28 rounded-full bg-rose-200/40 blur-2xl opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
                     <header className="flex items-start justify-between gap-4">
@@ -158,9 +182,6 @@ export default function InboxPage() {
               </div>
             )}
           </section>
-
-          {/* footer note */}
-         
         </div>
       </main>
     </AuthProvider>
