@@ -4,12 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET() {
   const supabase = await createClient();
 
-  // ✅ ไม่ต้อง require login เพราะหน้า WriteBoard ต้อง public
-
   const { data, error } = await supabase
     .from("recipients")
-    .select("id, full_name, email, code, avatar_url")
-    .order("created_at", { ascending: false });
+    .select("id, full_name, code, avatar_url")
+    .order("code", { ascending: true });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -18,7 +16,7 @@ export async function GET() {
   const items = (data ?? []).map((r: any) => ({
     id: r.id,
     code: r.code,
-    display_name: r.full_name ?? r.email ?? r.code ?? "Unknown",
+    display_name: r.full_name ?? r.code ?? "Unknown",
     photo_url: r.avatar_url ?? "/avatar-placeholder.png",
   }));
 
