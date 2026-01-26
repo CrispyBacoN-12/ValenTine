@@ -122,7 +122,7 @@ export default function WriteBoard() {
                     <img
                       src={r.photo_url || "/avatar-placeholder.png"}
                       alt={r.display_name} 
-                      className="h-full w-full object-cover object-[center_35%] transition-transform duration-300 group-hover:scale-105"
+                      className="h-full w-full object-cover object-[center_30%] transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>
