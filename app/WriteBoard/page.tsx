@@ -121,8 +121,8 @@ export default function WriteBoard() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={r.photo_url || "/avatar-placeholder.png"}
-                      alt={r.display_name}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      alt={r.display_name} 
+                      className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>
