@@ -7,7 +7,7 @@ type Recipient = {
   id: string;
   code: string;
   display_name: string;
-  avatar_url: string;
+  photo_url: string;
 };
 
 export default function WriteBoard() {
@@ -16,18 +16,33 @@ export default function WriteBoard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     setLoading(true);
+    setErr(null);
+
     fetch("/api/recipients")
       .then((r) => r.json())
       .then((d) => {
-        if (d?.error) setErr(d.error);
-        else setItems(Array.isArray(d) ? d : []);
+        if (cancelled) return;
+
+        if (d?.error) {
+          setErr(d.error);
+          setItems([]);
+          return;
+        }
+
+        setItems(Array.isArray(d) ? d : []);
       })
-      .catch(() => setErr("Failed to load recipients"))
-      .finally(() => setLoading(false));
+      .catch(() => !cancelled && setErr("Failed to load recipients"))
+      .finally(() => !cancelled && setLoading(false));
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const hasItems = useMemo(() => items.length > 0, [items]);
+  const hasItems = useMemo(() => items.length > 0, [items.length]);
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-rose-50 via-pink-50 to-white">
@@ -96,32 +111,20 @@ export default function WriteBoard() {
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4">
               {items.map((r) => (
                 <Link
-                  key={r.code}
+                  key={r.id}
                   href={`/write/${r.code}`}
                   className="group relative overflow-hidden rounded-2xl border border-rose-100 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  {/* soft shine */}
                   <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-rose-200/40 blur-2xl opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
                   <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={r.avatar_url}
+                      src={r.photo_url || "/avatar-placeholder.png"}
                       alt={r.display_name}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
-
-                    {/* bottom overlay */}
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                    <div className="pointer-events-none absolute bottom-3 left-3 right-3 flex items-center justify-between opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                      <span className="text-xs font-medium text-white/95">
-                        Write a letter
-                      </span>
-                      <span className="rounded-full bg-white/20 px-2 py-1 text-[10px] text-white/95 backdrop-blur">
-                        ✨
-                      </span>
-                    </div>
                   </div>
 
                   <div className="mt-3 text-center">
@@ -137,13 +140,11 @@ export default function WriteBoard() {
             </div>
           )}
 
-          {/* tip */}
           <div className="mt-8 text-center text-xs text-gray-500">
-            Tip: ต้องมี user token ถึงจะส่งได้ (ตั้งค่าได้ที่หน้า Admin)
+            Tip: การเขียนจดหมายไม่จำเป็นต้องล็อกอิน 💌
           </div>
         </section>
       </div>
     </main>
   );
 }
-  
